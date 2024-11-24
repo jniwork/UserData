@@ -150,7 +150,12 @@ class UsersData:
                     break
                 # Если выбрали изменить пароль, то меняем
                 elif answer == 2:
-                    new_password = input("Введите новый пароль: ")
+                    while True:
+                        new_password = input("Введите новый пароль: ")
+                        if not new_password:
+                            print("Ошибка. Пароль не может быть пустым")
+                            continue
+                        break
                     # Запрос в бд для замены пароля новым
                     self.cur.execute(
                         """UPDATE users_data SET Password = (?)
