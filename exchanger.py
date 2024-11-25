@@ -30,6 +30,7 @@ class Exchanger:
             self.db.commit()
 
     def get_exchange_rates(self):
+        """Метод для получения курса валют по апи"""
         rates = {}
 
         rate_urls = {
