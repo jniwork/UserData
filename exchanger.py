@@ -1,10 +1,6 @@
 import sqlite3
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+import requests
+from requests.auth import HTTPBasicAuth
 
 
 class Exchanger:
@@ -34,31 +30,25 @@ class Exchanger:
             self.db.commit()
 
     def get_exchange_rates(self):
-        """Метод для сбора курса валют с сайта"""
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        driver = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
-
         rates = {}
 
         rate_urls = {
-            "usd_rub": "https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=RUB",
-            "eur_rub": "https://www.xe.com/currencyconverter/convert/?Amount=1&From=EUR&To=RUB",
-            "rub_usd": "https://www.xe.com/currencyconverter/convert/?Amount=1&From=RUB&To=USD",
-            "rub_eur": "https://www.xe.com/currencyconverter/convert/?Amount=1&From=RUB&To=EUR",
-            "usd_eur": "https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=EUR",
-            "eur_usd": "https://www.xe.com/currencyconverter/convert/?Amount=1&From=EUR&To=USD"
+            "usd_rub": "https://xecdapi.xe.com/v1/convert_from?from=USD&to=RUB&amount=1",
+            "eur_rub": "https://xecdapi.xe.com/v1/convert_from?from=EUR&to=RUB&amount=1",
+            "rub_usd": "https://xecdapi.xe.com/v1/convert_from?from=RUB&to=USD&amount=1",
+            "rub_eur": "https://xecdapi.xe.com/v1/convert_from?from=RUB&to=EUR&amount=1",
+            "usd_eur": "https://xecdapi.xe.com/v1/convert_from?from=USD&to=EUR&amount=1",
+            "eur_usd": "https://xecdapi.xe.com/v1/convert_from?from=EUR&to=USD&amount=1"
         }
 
-        rate_locator = "//p[@class='sc-63d8b7e3-1 bMdPIi']"
+        api_id = 'test488234521'
+        api_key = 's688uioijgp8v4u6qfvivpvquc'
 
         for key, url in rate_urls.items():
-            driver.get(url)
-            rate_element = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, rate_locator)))
-            rate_value = rate_element.text.split(' ')[0]
-            rates[key] = round(float(rate_value), 2)
+            rate_data = requests.get(url, auth=HTTPBasicAuth(api_id, api_key)).json()
+            mid_value = rate_data.get('to', [{}])[0].get('mid')
+            rates[key] = mid_value
 
-        driver.quit()
         return rates
 
     def get_want_currency(self):
